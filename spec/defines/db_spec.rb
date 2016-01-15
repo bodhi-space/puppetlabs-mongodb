@@ -15,7 +15,7 @@ describe 'mongodb::db', :type => :define do
 
   it 'should contain mongodb_user with mongodb_database requirement' do
     is_expected.to contain_mongodb_user('User testuser on db testdb').with({
-      'user'     => 'testuser',
+      'username' => 'testuser',
       'database' => 'testdb',
       'require'  => 'Mongodb_database[testdb]',
     })

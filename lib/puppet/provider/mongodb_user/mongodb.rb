@@ -20,7 +20,7 @@ Puppet::Type.type(:mongodb_user).provide(:mongodb, :parent => Puppet::Provider::
           allusers += users.collect do |user|
               new(:name          => user['_id'],
                   :ensure        => :present,
-                  :user          => user['user'],
+                  :username      => user['user'],
                   :database      => db,
                   :roles         => user['roles'].sort,
                   :password_hash => user['pwd'])
@@ -33,7 +33,7 @@ Puppet::Type.type(:mongodb_user).provide(:mongodb, :parent => Puppet::Provider::
         users.collect do |user|
             new(:name          => user['_id'],
                 :ensure        => :present,
-                :user          => user['user'],
+                :username      => user['user'],
                 :database      => user['db'],
                 :roles         => from_roles(user['roles'], user['db']),
                 :password_hash => user['credentials']['MONGODB-CR'])
@@ -45,11 +45,11 @@ Puppet::Type.type(:mongodb_user).provide(:mongodb, :parent => Puppet::Provider::
     end
   end
 
-  # Assign prefetched users based on user and database, not on id and name
+  # Assign prefetched users based on username and database, not on id and name
   def self.prefetch(resources)
     users = instances
     resources.each do |name, resource|
-      if provider = users.find { |user| user.user == resource[:user] and user.database == resource[:database] }
+      if provider = users.find { |user| user.username == resource[:username] and user.database == resource[:database] }
         resources[name].provider = provider
       end
     end
@@ -61,7 +61,7 @@ Puppet::Type.type(:mongodb_user).provide(:mongodb, :parent => Puppet::Provider::
     if db_ismaster
       if mongo_24?
         user = {
-          :user => @resource[:user],
+          :user => @resource[:username],
           :pwd => @resource[:password_hash],
           :roles => @resource[:roles]
         }
@@ -70,7 +70,7 @@ Puppet::Type.type(:mongodb_user).provide(:mongodb, :parent => Puppet::Provider::
       else
         cmd_json=<<-EOS.gsub(/^\s*/, '').gsub(/$\n/, '')
         {
-          "createUser": "#{@resource[:user]}",
+          "createUser": "#{@resource[:username]}",
           "pwd": "#{@resource[:password_hash]}",
           "customData": {"createdBy": "Puppet Mongodb_user['#{@resource[:name]}']"},
           "roles": #{@resource[:roles].to_json},
@@ -82,7 +82,7 @@ Puppet::Type.type(:mongodb_user).provide(:mongodb, :parent => Puppet::Provider::
       end
 
       @property_hash[:ensure] = :present
-      @property_hash[:user] = @resource[:user]
+      @property_hash[:username] = @resource[:username]
       @property_hash[:database] = @resource[:database]
       @property_hash[:password_hash] = ''
       @property_hash[:roles] = @resource[:roles]
@@ -97,12 +97,12 @@ Puppet::Type.type(:mongodb_user).provide(:mongodb, :parent => Puppet::Provider::
   def destroy
     if db_ismaster
       if mongo_24?
-        mongo_eval("db.removeUser('#{@resource[:user]}')")
+        mongo_eval("db.removeUser('#{@resource[:username]}')")
       else
-        mongo_eval("db.dropUser('#{@resource[:user]}')")
+        mongo_eval("db.dropUser('#{@resource[:username]}')")
       end
     else
-      mongo_eval("db.dropUser('#{@resource[:user]}')")
+      mongo_eval("db.dropUser('#{@resource[:username]}')")
     end
   end
 
@@ -114,7 +114,7 @@ Puppet::Type.type(:mongodb_user).provide(:mongodb, :parent => Puppet::Provider::
     if db_ismaster
       cmd_json=<<-EOS.gsub(/^\s*/, '').gsub(/$\n/, '')
       {
-          "updateUser": "#{@resource[:user]}",
+          "updateUser": "#{@resource[:username]}",
           "pwd": "#{@resource[:password_hash]}",
           "digestPassword": false
       }
@@ -128,16 +128,16 @@ Puppet::Type.type(:mongodb_user).provide(:mongodb, :parent => Puppet::Provider::
   def roles=(roles)
     if db_ismaster
       if mongo_24?
-        mongo_eval("db.system.users.update({user:'#{@resource[:user]}'}, { $set: {roles: #{@resource[:roles].to_json}}})")
+        mongo_eval("db.system.users.update({user:'#{@resource[:username]}'}, { $set: {roles: #{@resource[:roles].to_json}}})")
       else
         grant = roles-@property_hash[:roles]
         if grant.length > 0
-          mongo_eval("db.getSiblingDB('#{@resource[:database]}').grantRolesToUser('#{@resource[:user]}', #{grant. to_json})")
+          mongo_eval("db.getSiblingDB('#{@resource[:database]}').grantRolesToUser('#{@resource[:username]}', #{grant. to_json})")
         end
 
         revoke = @property_hash[:roles]-roles
         if revoke.length > 0
-          mongo_eval("db.getSiblingDB('#{@resource[:database]}').revokeRolesFromUser('#{@resource[:user]}', #{revoke.to_json})")
+          mongo_eval("db.getSiblingDB('#{@resource[:database]}').revokeRolesFromUser('#{@resource[:username]}', #{revoke.to_json})")
         end
       end
     else

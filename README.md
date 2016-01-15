@@ -579,7 +579,7 @@ Creates database with user. Resource title used as database name.
 Name of the user for database
 
 #####`password_hash`
-Hex encoded md5 hash of "$user:mongo:$password".
+Hex encoded md5 hash of "$username:mongo:$password".
 For more information please refer to [MongoDB Authentication Process](http://docs.mongodb.org/meta-driver/latest/legacy/implement-authentication-in-driver/#authentication-process).
 
 #####`password`
@@ -621,11 +621,11 @@ mongodb_user { testuser:
   require       => Class['mongodb::server'],
 }
 ```
-#####`user`
+#####`username`
 Name of the mongodb user.
 
 #####`password_hash`
-Hex encoded md5 hash of "$user:mongo:$password".
+Hex encoded md5 hash of "$username:mongo:$password".
 
 #####`database`
 Name of database. It will be created, if not exists.

@@ -37,7 +37,7 @@ describe Puppet::Type.type(:mongodb_user).provider(:mongodb) do
 
   describe 'self.instances' do
     it 'returns an array of users' do
-      usernames = provider.class.instances.collect {|x| x.username }
+      usernames = provider.class.instances.collect {|x| x.user }
       expect(parsed_users).to match_array(usernames)
     end
   end

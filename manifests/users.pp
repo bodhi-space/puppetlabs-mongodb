@@ -8,7 +8,7 @@ class mongodb::users(
     create_resources(mongodb_user, $users)
   }
 
-  Mongodb_database <| |> -> Mongodb_user <| |>
+#  Mongodb_database <| |> -> Mongodb_user <| |>
 
 }
 

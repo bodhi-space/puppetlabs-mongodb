@@ -15,15 +15,15 @@ Puppet::Type.type(:mongodb_database).provide(:mongodb, :parent => Puppet::Provid
     end
   end
 
-  # Assign prefetched dbs based on name.
-  def self.prefetch(resources)
-    dbs = instances
-    resources.keys.each do |name|
-      if provider = dbs.find { |db| db.name == name }
-        resources[name].provider = provider
-      end
-    end
-  end
+#  # Assign prefetched dbs based on name.
+#  def self.prefetch(resources)
+#    dbs = instances
+#    resources.keys.each do |name|
+#      if provider = dbs.find { |db| db.name == name }
+#        resources[name].provider = provider
+#      end
+#    end
+#  end
 
   def create
     if db_ismaster

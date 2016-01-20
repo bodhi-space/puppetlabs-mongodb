@@ -36,13 +36,13 @@ Puppet::Type.type(:mongodb_replset).provide(:mongo, :parent => Puppet::Provider:
     end
   end
 
-  def self.prefetch(resources)
-    instances.each do |prov|
-      if resource = resources[prov.name]
-        resource.provider = prov
-      end
-    end
-  end
+#  def self.prefetch(resources)
+#    instances.each do |prov|
+#      if resource = resources[prov.name]
+#        resource.provider = prov
+#      end
+#    end
+#  end
 
   def exists?
     @property_hash[:ensure] == :present
